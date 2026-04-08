@@ -1,6 +1,8 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+# Create your models here.
+#Django Abstarct User with(Names, Email) we are adding our extras like Bio, Profile pic ect.
 class User(AbstractUser):
     bio = models.TextField(blank=True, null=True)
     profile_pic = models.ImageField(
