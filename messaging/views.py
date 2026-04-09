@@ -8,6 +8,8 @@ from django.db.models import Q, Max
 from .models import Message
 from accounts.models import User
 from social.models import Notification
+from posts.models import Post
+from django.db.models import Q, Count
 
 # Create your views here.
 # Handles direct messaging between users.
@@ -150,3 +152,69 @@ def send_message_ajax_view(request, username):
         }
     })
 
+# Part of the admin search responsibility 
+@login_required
+def search_view(request):
+    """
+    AJAX powered search for users and posts.
+    Accepts a query string from the URL parameter 'q'.
+    Example URL: /search/?q=daniel
+
+    Returns JSON results if the request is AJAX,
+    or renders a full search results page for regular requests
+    """
+
+    q = request.GET.get('q', '').strip()
+
+    users = []
+    posts = []
+
+    if q:
+        # Search users by username or bio.
+        # icontains makes the search case-insensitive.
+        users = User.objects.filter(
+            Q(username__icontains=q) |
+            Q(bio__icontains=q)
+        ).exclude(
+            id=request.user.id  # Exclude the logged-in user from results
+        )[:10]  # Limit to 10 results for performance
+
+        # Search posts by content or tag name.
+        posts = Post.objects.filter(
+            Q(content__icontains=q) |
+            Q(tags__name__icontains=q),
+            visibility='public'   # Only show public posts in search results
+        ).select_related('user').annotate(
+            likes_count=Count('likes', distinct=True)
+        ).distinct()[:10]  
+
+    # If called via AJAX return JSON for dynamic rendering.
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'users': [
+                {
+                    'username': u.username,
+                    'bio': u.bio or '',
+                    'profile_pic': u.profile_pic.url if u.profile_pic else '',
+                }
+                for u in users
+            ],
+            'posts': [
+                {
+                    'id': p.id,
+                    'content': p.content[:100],
+                    'username': p.user.username,
+                    'likes_count': p.likes_count,
+                }
+                for p in posts
+            ]
+        })
+
+    # Regular GET request render the full search results page.
+    context = {
+        'query': q,
+        'users': users,
+        'posts': posts,
+    }
+
+    return render(request, 'search/results.html', context)
