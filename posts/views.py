@@ -12,8 +12,7 @@ from social.models import Follow, Like
 # Covers: news feed, create post, post detail, edit post, delete post.
 # Create your views here.
 
-class PostListView(View):
-    def get(self, request, *args, **kwargs): # will run whenevr the user tries to ciew this page
+def get(self, request, *args, **kwargs): # will run whenevr the user tries to ciew this page
         posts = Post.objects.all().order_by('-created_on') # displays posts from the most recent to the last (newest to oldest)
 
         context = {
