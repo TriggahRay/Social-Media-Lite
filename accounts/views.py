@@ -15,7 +15,7 @@ def register_view(request):
     # If the user is already logged in send them to the feed.
     # No point showing the register page to authenticated users.
     if request.user.is_authenticated:
-        return redirect('feed')
+        return redirect('posts:feed')
     
     if request.method == 'POST':       
         form = RegisterForm(request.POST, request.FILES)
@@ -24,7 +24,7 @@ def register_view(request):
             user = form.save()
 
             messages.success(request, 'Account created successfully. Please log in.')
-            return redirect('login')
+            return redirect('accounts:login')
         else:
             messages.error(request, 'Please correct the errors below.')
         
@@ -38,7 +38,7 @@ def register_view(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('feed')
+        return redirect('posts:feed')
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -56,7 +56,7 @@ def login_view(request):
 
                 # If the user was redirected to login from a protected page
                 # send them back there. Otherwise go to the feed.
-                next_url = request.GET.get('next', 'feed')
+                next_url = request.GET.get('next', 'posts:feed')
                 return redirect(next_url)
             else:
                 # Credentials did not match any user in the database.
@@ -77,7 +77,7 @@ def logout_view(request):
     """
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
-    return redirect('login')
+    return redirect('accounts:login')
 
 
 def profile_view(request, username):

@@ -7,7 +7,7 @@ urlpatterns = [
     # News feed the homepage for logged in users.
     # URL: /feed/
     # Shows posts from followed users own posts.
-    path('', views.feed_view, name='feed'),
+    path('feed/', views.feed_view, name='feed'),
 
     # Alternative feed URL same view,different URL.
     path('feed/', views.feed_view, name='feed_alt'),
