@@ -1,10 +1,4 @@
-/* ═══════════════════════════════════════════════
-   style.css — SocialLite Main Stylesheet
-  
-   Import Bootstrap first in base.html, then this file.
-═══════════════════════════════════════════════ */
 
-/* ── CSS Variables — easy to change the whole theme ── */
 :root {
   --bg-primary:    #0a0a0a;   /* Main page background — deepest dark */
   --bg-secondary:  #1a1a1a;   /* Cards, navbar background */
