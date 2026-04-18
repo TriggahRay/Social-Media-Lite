@@ -15,7 +15,7 @@ def register_view(request):
     # If the user is already logged in send them to the feed.
     # No point showing the register page to authenticated users.
     if request.user.is_authenticated:
-        return redirect('feed')
+        return redirect('posts:feed')
     
     if request.method == 'POST':       
         form = RegisterForm(request.POST, request.FILES)
@@ -24,7 +24,7 @@ def register_view(request):
             user = form.save()
 
             messages.success(request, 'Account created successfully. Please log in.')
-            return redirect('login')
+            return redirect('accounts:login')
         else:
             messages.error(request, 'Please correct the errors below.')
         
@@ -38,7 +38,7 @@ def register_view(request):
 
 def login_view(request):
     if request.user.is_authenticated:
-        return redirect('feed')
+        return redirect('posts:feed')
 
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -56,8 +56,12 @@ def login_view(request):
 
                 # If the user was redirected to login from a protected page
                 # send them back there. Otherwise go to the feed.
-                next_url = request.GET.get('next', 'feed')
-                return redirect(next_url)
+                next_url = request.GET.get('next',)
+                if next_url:
+                    return redirect(next_url)
+                else:
+                    return redirect('posts:feed')
+                #return redirect(next_url)
             else:
                 # Credentials did not match any user in the database.
                 messages.error(request, 'Invalid username or password.')
@@ -77,7 +81,7 @@ def logout_view(request):
     """
     logout(request)
     messages.success(request, 'You have been logged out successfully.')
-    return redirect('login')
+    return redirect('accounts:login')
 
 
 def profile_view(request, username):
@@ -120,11 +124,11 @@ def edit_profile_view(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Profile updated successfully.')
-            return redirect('profile', username=request.user.username)
+            return redirect('accounts:profile', username=request.user.username)
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         # Pre fill the form with the current user's data.
         form = ProfileEditForm(instance=request.user)
 
-    return render(request, 'accounts/edit_profile.html', {'form': form})
+    return render(request, 'accounts/edit_profile.html', {'form': form, 'hide_bottom_nav': True,})

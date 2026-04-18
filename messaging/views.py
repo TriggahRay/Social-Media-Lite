@@ -211,10 +211,8 @@ def search_view(request):
         })
 
     # Regular GET request render the full search results page.
-    context = {
+    return render(request, 'messaging/search_results.html', {
         'query': q,
         'users': users,
         'posts': posts,
-    }
-
-    return render(request, 'search/results.html', context)
+    })

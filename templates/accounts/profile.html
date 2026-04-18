@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile_user.username }} · Thee Social{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:680px;padding-top:16px;">
+
+  
+  <div class="profile-header">
+
+    
+    {% if profile_user.profile_pic %}
+      <img src="{{ profile_user.profile_pic.url }}" class="avatar-lg" alt="avatar">
+    {% else %}
+      <div class="avatar-placeholder size-lg mx-auto">
+        {{ profile_user.username|first|upper }}
+      </div>
+    {% endif %}
+
+    <!-- Name -->
+    <div class="profile-name">{{ profile_user.get_full_name|default:profile_user.username }}</div>
+    <div style="color:var(--text-secondary);font-size:0.88rem;">@{{ profile_user.username }}</div>
+
+    <!-- Bio -->
+    {% if profile_user.bio %}
+      <div class="profile-bio">{{ profile_user.bio }}</div>
+    {% endif %}
+
+    
+    <div class="profile-stats">
+      <div class="stat-item">
+        <span class="stat-number">{{ posts_count }}</span>
+        <span class="stat-label">Posts</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ followers_count }}</span>
+        <span class="stat-label">Followers</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number">{{ following_count }}</span>
+        <span class="stat-label">Following</span>
+      </div>
+    </div>
+
+    
+    <div class="d-flex justify-content-center gap-2 mt-2">
+      {% if user == profile_user %}
+        <a href="{% url 'accounts:edit_profile' %}" class="btn btn-secondary btn-sm px-4">
+          Edit Profile
+        </a>
+      {% else %}
+        <!-- Follow / Unfollow button -->
+        <button id="follow-btn"
+                class="btn-follow {% if is_following %}following{% endif %}"
+                data-username="{{ profile_user.username }}">
+          {% if is_following %}Following{% else %}Follow{% endif %}
+        </button>
+
+        <!-- Message button -->
+        <a href="{% url 'messaging:conversation' username=profile_user.username %}"
+           class="btn btn-secondary btn-sm px-4">
+          <i class="bi bi-chat"></i> Message
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── Profile tabs ── -->
+  <div class="profile-tabs">
+    <a href="#" class="profile-tab active">
+      <i class="bi bi-grid-3x3"></i> Photos
+    </a>
+    <a href="#" class="profile-tab">
+      <i class="bi bi-bookmark"></i> Saved
+    </a>
+  </div>
+
+  <!-- ── Post grid ── -->
+  {% if posts %}
+    <div class="profile-grid">
+      {% for post in posts %}
+        <div class="profile-grid-item">
+          {% if post.image %}
+            <img src="{{ post.image.url }}" alt="post">
+          {% else %}
+            
+            <div style="width:100%;height:100%;background:var(--bg-tertiary);
+                        display:flex;align-items:center;justify-content:center;
+                        padding:12px;font-size:0.8rem;color:var(--text-secondary);">
+              {{ post.content|truncatechars:60 }}
+            </div>
+          {% endif %}
+          <div class="grid-overlay">
+            <span><i class="bi bi-heart-fill"></i> {{ post.likes_count }}</span>
+            <span><i class="bi bi-chat-fill"></i> {{ post.comments_count }}</span>
+          </div>
+          <a href="{% url 'posts:post_detail' post_id=post.id %}"
+             style="position:absolute;inset:0;"></a>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-5" style="color:var(--text-muted);">
+      <i class="bi bi-camera" style="font-size:2.5rem;"></i>
+      <p class="mt-2">No posts yet.</p>
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  
+  const followBtn = document.getElementById('follow-btn');
+  if (followBtn) {
+    followBtn.addEventListener('click', function() {
+      const username = this.dataset.username;
+      fetch(`/follow/${username}/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': CSRF_TOKEN,
+          'X-Requested-With': 'XMLHttpRequest'
+        }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.is_following) {
+          followBtn.textContent = 'Following';
+          followBtn.classList.add('following');
+        } else {
+          followBtn.textContent = 'Follow';
+          followBtn.classList.remove('following');
+        }
+        // Update follower count on the page
+        document.querySelector('.stat-number:nth-child(1)').textContent = data.followers_count;
+      });
+    });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Search · Thee Social{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:620px;padding-top:16px;">
+
+  <!-- Search input -->
+  <div class="mb-4">
+    <form method="get" action="{% url 'messaging:search' %}">
+      <div class="input-group">
+        <input type="text" name="q" class="form-control"
+               placeholder="Search users or posts..."
+               value="{{ query }}" autofocus>
+        <button class="btn btn-primary" type="submit">
+          <i class="bi bi-search"></i>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  {% if query %}
+
+    <!-- Users section -->
+    {% if users %}
+    <h6 style="color:var(--text-secondary);font-size:0.8rem;
+               text-transform:uppercase;letter-spacing:0.06em;
+               margin-bottom:10px;">People</h6>
+    <div class="card mb-4">
+      {% for u in users %}
+      <a href="{% url 'accounts:profile' username=u.username %}"
+         class="inbox-item">
+        {% if u.profile_pic %}
+          <img src="{{ u.profile_pic.url }}" class="avatar" alt="avatar">
+        {% else %}
+          <div class="avatar-placeholder size-md">{{ u.username|first|upper }}</div>
+        {% endif %}
+        <div>
+          <div style="font-weight:700;">{{ u.username }}</div>
+          <div style="font-size:0.82rem;color:var(--text-secondary);">
+            {{ u.bio|default:""|truncatechars:50 }}
+          </div>
+        </div>
+      </a>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Posts section -->
+    {% if posts %}
+    <h6 style="color:var(--text-secondary);font-size:0.8rem;
+               text-transform:uppercase;letter-spacing:0.06em;
+               margin-bottom:10px;">Posts</h6>
+    {% for post in posts %}
+    <div class="post-card">
+      <div class="post-card-header">
+        <a href="{% url 'accouts:profile' username=post.user.username %}" class="post-card-user">
+          {% if post.user.profile_pic %}
+            <img src="{{ post.user.profile_pic.url }}" class="avatar" alt="avatar">
+          {% else %}
+            <div class="avatar-placeholder size-md">{{ post.user.username|first|upper }}</div>
+          {% endif %}
+          <div>
+            <div class="post-card-username">{{ post.user.username }}</div>
+            <div class="post-card-time">{{ post.created_at|timesince }} ago</div>
+          </div>
+        </a>
+      </div>
+      <div class="post-card-content">{{ post.content|truncatechars:200 }}</div>
+      {% if post.image %}
+        <img src="{{ post.image.url }}" class="post-card-image" alt="post">
+      {% endif %}
+      <div class="post-card-stats">
+        <span><i class="bi bi-heart-fill" style="color:var(--danger);"></i>
+          {{ post.likes_count }} likes</span>
+        <a href="{% url 'posts:post_detail' post_id=post.id %}"
+           style="color:var(--accent);">View post</a>
+      </div>
+    </div>
+    {% endfor %}
+    {% endif %}
+
+    {% if not users and not posts %}
+    <div class="text-center py-5" style="color:var(--text-muted);">
+      <i class="bi bi-search" style="font-size:2rem;"></i>
+      <p class="mt-2">No results found for "{{ query }}"</p>
+    </div>
+    {% endif %}
+
+  {% else %}
+  <div class="text-center py-5" style="color:var(--text-muted);">
+    <i class="bi bi-search" style="font-size:2rem;"></i>
+    <p class="mt-2">Search for people or posts</p>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

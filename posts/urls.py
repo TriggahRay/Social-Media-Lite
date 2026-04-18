@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 
+
 app_name = 'posts'
 
 urlpatterns = [
@@ -31,5 +32,4 @@ urlpatterns = [
     # Shows a confirmation page on GET deletes on POST.
     # Only the post owner can access this 
     path('post/<int:post_id>/delete/', views.delete_post_view, name='delete_post'),
-
 ]

@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login · Thee Social{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+
+    
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+        <i class="bi bi-lightning-charge-fill"></i>
+      </div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--text-primary);">Thee Social</div>
+    </div>
+
+    <h2 class="auth-title mt-3">Login</h2>
+
+    <form method="post" novalidate>
+      {% csrf_token %}
+
+      <!-- Username -->
+      <div class="mb-3">
+        <div class="input-group">
+          <span class="input-group-text bg-dark-input border-dark-custom">
+            <i class="bi bi-lock-fill text-muted"></i>
+          </span>
+          <input type="text" name="username"
+                 class="form-control"
+                 placeholder="Email or Username"
+                 value="{{ form.username.value|default:'' }}"
+                 required autofocus>
+        </div>
+        {% if form.username.errors %}
+          <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Password -->
+      <div class="mb-4">
+        <div class="input-group">
+          <span class="input-group-text bg-dark-input border-dark-custom">
+            <i class="bi bi-lock-fill text-muted"></i>
+          </span>
+          <input type="password" name="password"
+                 class="form-control"
+                 placeholder="Password"
+                 required>
+        </div>
+        {% if form.password.errors %}
+          <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+        {% endif %}
+      </div>
+
+      <!-- Submit -->
+      <button type="submit" class="btn btn-primary w-100 py-2 fs-6">
+        Login
+      </button>
+    </form>
+
+    <hr class="divider mt-4">
+
+    <p class="text-center" style="color:var(--text-secondary);font-size:0.9rem;">
+      Don't have an account?
+      <a href="{% url 'accounts:register' %}" style="color:var(--accent);font-weight:600;">Register</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

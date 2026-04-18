@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Post{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; padding-top: 20px;">
+    <h2>Edit Post</h2>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+
+        {% if post.image %}
+            <p>Current image:</p>
+            <img src="{{ post.image.url }}" alt="Post image" style="max-width: 100%; height: auto; margin-bottom: 15px;">
+        {% endif %}
+
+        <button type="submit" class="btn btn-primary">Update Post</button>
+        <a href="{% url 'posts:post_detail' post_id=post.id %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

@@ -21,23 +21,20 @@ def get(self, request, *args, **kwargs): # will run whenevr the user tries to ci
         
         return render(request, 'social/post_list.html', context)
 
+# posts/views.py — update feed_view context
+
+from social.models import Follow, Like
+from accounts.models import User
+
 def feed_view(request):
-    """
-    Displays the main news feed showing posts from followed users.
-    If the user is not logged in shows all public posts instead.
-    """
     if request.user.is_authenticated:
-        # Get all user IDs that the logged-in user follows.
         following_ids = Follow.objects.filter(
             follower=request.user
         ).values_list('following_id', flat=True)
 
-        # Fetch posts from followed users the user's own posts.
         posts = Post.objects.filter(
             user_id__in=following_ids
-        ) | Post.objects.filter(
-            user=request.user
-        )
+        ) | Post.objects.filter(user=request.user)
     else:
         posts = Post.objects.filter(visibility='public')
 
@@ -47,7 +44,6 @@ def feed_view(request):
     ).order_by('-created_at')
 
     paginator = Paginator(posts, 10)
-
     page_number = request.GET.get('page', 1)
     page_obj = paginator.get_page(page_number)
 
@@ -57,13 +53,28 @@ def feed_view(request):
             user=request.user
         ).values_list('post_id', flat=True)
 
+    # ── Suggested users ──
+    # Show users the logged-in user does NOT already follow
+    # and exclude themselves. Limit to 5 suggestions.
+    suggested_users = []
+    if request.user.is_authenticated:
+        following_ids = Follow.objects.filter(
+            follower=request.user
+        ).values_list('following_id', flat=True)
+
+        suggested_users = User.objects.exclude(
+            id__in=following_ids       # Exclude already followed
+        ).exclude(
+            id=request.user.id         # Exclude self
+        ).order_by('?')[:5]            # Random 5 suggestions
+
     context = {
-        'page_obj': page_obj,        
-        'liked_post_ids': liked_post_ids,  
+        'page_obj': page_obj,
+        'liked_post_ids': liked_post_ids,
+        'suggested_users': suggested_users,
     }
 
     return render(request, 'posts/feed.html', context)
-
 
 @login_required
 def create_post_view(request):
@@ -83,13 +94,13 @@ def create_post_view(request):
             form.save_m2m()
 
             messages.success(request, 'Post created successfully.')
-            return redirect('feed')
+            return redirect('posts:feed')
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
         form = PostForm()
 
-    return render(request, 'posts/create_post.html', {'form': form})
+    return render(request, 'posts/create_post.html', {'form': form, 'hide_bottom_nav': True,})
 
 
 def post_detail_view(request, post_id):
@@ -142,7 +153,7 @@ def edit_post_view(request, post_id):
         if form.is_valid():
             form.save()
             messages.success(request, 'Post updated successfully.')
-            return redirect('post_detail', post_id=post.id)
+            return redirect('posts:post_detail', post_id=post.id)
         else:
             messages.error(request, 'Please correct the errors below.')
     else:
@@ -170,7 +181,7 @@ def delete_post_view(request, post_id):
         # linked to this post are automatically deleted too.
         post.delete()
         messages.success(request, 'Post deleted successfully.')
-        return redirect('feed')
+        return redirect('posts:feed')
 
     # If someone visits the delete URL with a GET request
     # show a confirmation page before deleting.

@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/6.0/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
-
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -58,7 +58,7 @@ ROOT_URLCONF = 'socialmedia.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -118,9 +118,97 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = ['static']
+# ══════════════════════════════════════════════════
+# STATIC FILES
+# CSS, JavaScript, and image files that are part of the app
+# ══════════════════════════════════════════════════
 
+# URL prefix for static files.
+# Example: /static/css/style.css
+STATIC_URL = '/static/'
+
+# Folders where Django looks for static files during development.
+# Our main static folder at the project root.
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+
+# Where collectstatic copies all static files for production deployment.
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# ══════════════════════════════════════════════════
+# MEDIA FILES
+# Files uploaded by users (profile pictures, post images).
+# ══════════════════════════════════════════════════
 import os
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# ══════════════════════════════════════════════════
+# AUTHENTICATION REDIRECTS
+# Controls where Django redirects users after login/logout.
+# ══════════════════════════════════════════════════
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+
+# ══════════════════════════════════════════════════
+# SESSION SETTINGS
+# Controls how user sessions are stored and managed.
+# ══════════════════════════════════════════════════
+
+# Sessions are stored in the database (default).
+SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+# Session expires after 30 minutes of inactivity.
+SESSION_COOKIE_AGE = 1800
+
+# True means the session expires when the browser is closed,
+# regardless of SESSION_COOKIE_AGE.
+# False means the session persists for SESSION_COOKIE_AGE seconds.
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+# Prevents JavaScript from accessing the session cookie.
+# This protects against XSS attacks that try to steal session data.
+SESSION_COOKIE_HTTPONLY = True
+
+# True enforces HTTPS-only cookie transmission.
+# Set to True in production. Keep False in development (no HTTPS locally).
+SESSION_COOKIE_SECURE = False
+
+# ══════════════════════════════════════════════════
+# CSRF SETTINGS
+# Cross-Site Request Forgery protection.
+# Django's CsrfViewMiddleware enforces this automatically.
+# ══════════════════════════════════════════════════
+
+# Prevents JavaScript from reading the CSRF cookie.
+# Set to False so our JavaScript AJAX calls can read it.
+CSRF_COOKIE_HTTPONLY = False
+
+# True enforces HTTPS-only CSRF cookie. False for development.
+CSRF_COOKIE_SECURE = False
+
+# ══════════════════════════════════════════════════
+# FILE UPLOAD SETTINGS
+# ══════════════════════════════════════════════════
+
+# Maximum allowed upload size 5MB in bytes.
+# Files larger than this will be rejected server-side.
+DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024   # 5MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024   # 5MB
+
+# ══════════════════════════════════════════════════
+# MESSAGE TAGS
+# Maps Django's message levels to Bootstrap CSS classes.
+# This makes alert-success, alert-danger etc work in templates.
+# ══════════════════════════════════════════════════
+from django.contrib.messages import constants as message_constants
+MESSAGE_TAGS = {
+    message_constants.DEBUG:   'debug',
+    message_constants.INFO:    'info',
+    message_constants.SUCCESS: 'success',
+    message_constants.WARNING: 'warning',
+    message_constants.ERROR:   'danger',   
+}

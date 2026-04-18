@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}Register · Thee Social{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card" style="max-width:480px;">
+
+    <div class="auth-logo">
+      <div class="auth-logo-icon">
+        <i class="bi bi-lightning-charge-fill"></i>
+      </div>
+    </div>
+
+    <h2 class="auth-title mt-3">Create Account</h2>
+    <p class="auth-subtitle">Join Thee Social today</p>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      
+      <div class="row g-2 mb-3">
+        <div class="col-6">
+          <input type="text" name="first_name" class="form-control"
+                 placeholder="First name"
+                 value="{{ form.first_name.value|default:'' }}">
+        </div>
+        <div class="col-6">
+          <input type="text" name="last_name" class="form-control"
+                 placeholder="Last name"
+                 value="{{ form.last_name.value|default:'' }}">
+        </div>
+      </div>
+
+      <!-- Username -->
+      <div class="mb-3">
+        <input type="text" name="username" class="form-control"
+               placeholder="Username"
+               value="{{ form.username.value|default:'' }}" required>
+        {% if form.username.errors %}
+          <ul class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- Email -->
+      <div class="mb-3">
+        <input type="email" name="email" class="form-control"
+               placeholder="Email address"
+               value="{{ form.email.value|default:'' }}" required>
+        {% if form.email.errors %}
+          <ul class="errorlist">{% for e in form.email.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- Bio -->
+      <div class="mb-3">
+        <textarea name="bio" class="form-control" rows="2"
+                  placeholder="Bio (optional)">{{ form.bio.value|default:'' }}</textarea>
+      </div>
+
+      <!-- Password -->
+      <div class="mb-3">
+        <input type="password" name="password1" class="form-control"
+               placeholder="Password" required>
+        {% if form.password1.errors %}
+          <ul class="errorlist">{% for e in form.password1.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <!-- Confirm password -->
+      <div class="mb-4">
+        <input type="password" name="password2" class="form-control"
+               placeholder="Confirm password" required>
+        {% if form.password2.errors %}
+          <ul class="errorlist">{% for e in form.password2.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+        {% endif %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 py-2 fs-6">
+        Create Account
+      </button>
+    </form>
+
+    <hr class="divider mt-4">
+    <p class="text-center" style="color:var(--text-secondary);font-size:0.9rem;">
+      Already have an account?
+      <a href="{% url 'accounts:login' %}" style="color:var(--accent);font-weight:600;">Login</a>
+    </p>
+
+  </div>
+</div>
+{% endblock %}

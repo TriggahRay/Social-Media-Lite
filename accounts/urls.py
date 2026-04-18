@@ -19,11 +19,12 @@ urlpatterns = [
     # Should only be accessed via POST to prevent CSRF attacks.
     path('logout/', views.logout_view, name='logout'),
 
+    # Edit profile page lets the logged-in user update their info.
+    # URL: /profile/edit/
+    path('profile/edit/', views.edit_profile_view, name='edit_profile'),
+
     # User profile page shows a user's posts and info.
     # URL: /profile/daniel/ (where daniel is the username)
     path('profile/<str:username>/', views.profile_view, name='profile'),
 
-    # Edit profile page lets the logged-in user update their info.
-    # URL: /profile/edit/
-    path('profile/edit/', views.edit_profile_view, name='edit_profile'),
 ]
