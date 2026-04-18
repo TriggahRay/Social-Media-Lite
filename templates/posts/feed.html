@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-<<<<<<< HEAD
+
 {% load static %}
 
 {% block title %}Feed · Thee Social{% endblock %}
@@ -39,14 +39,14 @@
           </div>
         {% endif %}
 
-        
+
         <button class="create-post-trigger" id="createTrigger">
           What's on your mind, {{ user.first_name|default:user.username }}?
         </button>
 
       </div>
 
-      
+
       <div class="create-post-form" id="createForm" style="display:none;">
         <form method="post" enctype="multipart/form-data" action="{% url 'posts:create_post' %}">
           {% csrf_token %}
@@ -132,7 +132,7 @@
     <div class="card text-center py-5" style="color:var(--text-muted);">
       <i class="bi bi-people" style="font-size:2.5rem;"></i>
       <p class="mt-2">No posts yet. Follow people to see their posts here.</p>
-<a href="{% url 'messaging:search' %}" 
+<a href="{% url 'messaging:search' %}"
    class="btn btn-primary btn-sm"
    style="width:160px; display:block; margin:10px auto;">
   Find People
@@ -328,7 +328,7 @@
   <div class="card aside-card">
     <div class="aside-profile">
       {% if request.user.is_authenticated %}
-        
+
         {% if request.user.profile_pic %}
           <img src="{{ request.user.profile_pic.url }}"
                class="avatar" alt="avatar"
@@ -368,7 +368,7 @@
     </div>
   </div>
 
-    
+
 
     <!-- Suggested users -->
     {% if suggested_users %}
@@ -403,7 +403,7 @@
     </div>
     {% endif %}
 
-    
+
       <div style="margin-top:6px;color:var(--text-muted);font-size:0.75rem;">
         © TheeSocial
       </div>
@@ -418,6 +418,7 @@
 
 {% block extra_js %}
 <script>
+
   // ── Expand create post form when trigger is clicked ──
   document.getElementById('createTrigger').addEventListener('click', function() {
     document.getElementById('createForm').style.display = 'block';
@@ -557,9 +558,4 @@
   }
 </script>
 {% endblock %}
-=======
 
-{% block content %}
-<h1>Hi there</h1>
-{% endblock content %}
->>>>>>> ab270ff6dcfc240ee159aea75da5e1efffae43a0
