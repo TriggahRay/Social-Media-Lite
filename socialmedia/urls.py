@@ -2,12 +2,14 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
+from accounts import views as account_views
 
 urlpatterns = [
     #Django built-in admin panel.../admin
     path('admin/', admin.site.urls),
     #For /register, /login etc.
-    path('', include('accounts.urls')),
+    path('', account_views.login_view, name='home'),
+    path('accounts/', include('accounts.urls')),
     #For /feed/, /post/create/...
     path('', include('posts.urls')),
     #For /like/1/, /comment/1/, /follow/daniel/...

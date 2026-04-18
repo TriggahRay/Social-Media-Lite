@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -12,7 +13,8 @@ from social.models import Follow, Like
 # Covers: news feed, create post, post detail, edit post, delete post.
 # Create your views here.
 
-def get(self, request, *args, **kwargs): # will run whenevr the user tries to ciew this page
+
+"""def get(self, request, *args, **kwargs): # will run whenevr the user tries to view this page
         posts = Post.objects.all().order_by('-created_on') # displays posts from the most recent to the last (newest to oldest)
 
         context = {
@@ -20,12 +22,16 @@ def get(self, request, *args, **kwargs): # will run whenevr the user tries to ci
         }
         
         return render(request, 'social/post_list.html', context)
+<<<<<<< HEAD
 
 # posts/views.py — update feed_view context
 
 from social.models import Follow, Like
 from accounts.models import User
 
+=======
+"""
+>>>>>>> ab270ff6dcfc240ee159aea75da5e1efffae43a0
 def feed_view(request):
     if request.user.is_authenticated:
         following_ids = Follow.objects.filter(

@@ -56,12 +56,17 @@ def login_view(request):
 
                 # If the user was redirected to login from a protected page
                 # send them back there. Otherwise go to the feed.
+<<<<<<< HEAD
                 next_url = request.GET.get('next',)
                 if next_url:
                     return redirect(next_url)
                 else:
                     return redirect('posts:feed')
                 #return redirect(next_url)
+=======
+                next_url = request.GET.get('next', 'posts:feed')
+                return redirect(next_url)
+>>>>>>> ab270ff6dcfc240ee159aea75da5e1efffae43a0
             else:
                 # Credentials did not match any user in the database.
                 messages.error(request, 'Invalid username or password.')

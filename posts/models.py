@@ -5,7 +5,7 @@ from accounts.models import User
 # Create your models here.
 
 #Just being ambitious with this one if it works great if not, still okay
-# A hash tag that can be attched to posts
+# A hash tag that can be attached to posts
 class Tag(models.Model):
     name = models.CharField(max_length=50, unique=True)
 

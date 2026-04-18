@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+<<<<<<< HEAD
 {% load static %}
 
 {% block title %}Login · Thee Social{% endblock %}
@@ -68,4 +69,29 @@
 
   </div>
 </div>
+=======
+
+{% block content %}
+<h2>Login</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    {% for field in form %}
+        <div>
+            <label>{{ field.label }}</label><br>
+            {{ field }}
+
+            {% for error in field.errors %}
+                <p style="color: red;">{{ error }}</p>
+            {% endfor %}
+        </div>
+        <br>
+    {% endfor %}
+
+    <button type="submit">Login</button>
+</form>
+
+<p>Don't have an account? <a href="{% url 'accounts:register' %}">Sign up</a></p>
+>>>>>>> ab270ff6dcfc240ee159aea75da5e1efffae43a0
 {% endblock %}
