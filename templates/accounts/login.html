@@ -1,5 +1,4 @@
 {% extends 'base.html' %}
-<<<<<<< HEAD
 {% load static %}
 
 {% block title %}Login · Thee Social{% endblock %}
@@ -8,7 +7,6 @@
 <div class="auth-wrapper">
   <div class="auth-card">
 
-    
     <div class="auth-logo">
       <div class="auth-logo-icon">
         <i class="bi bi-lightning-charge-fill"></i>
@@ -21,7 +19,6 @@
     <form method="post" novalidate>
       {% csrf_token %}
 
-      <!-- Username -->
       <div class="mb-3">
         <div class="input-group">
           <span class="input-group-text bg-dark-input border-dark-custom">
@@ -38,7 +35,6 @@
         {% endif %}
       </div>
 
-      <!-- Password -->
       <div class="mb-4">
         <div class="input-group">
           <span class="input-group-text bg-dark-input border-dark-custom">
@@ -54,7 +50,6 @@
         {% endif %}
       </div>
 
-      <!-- Submit -->
       <button type="submit" class="btn btn-primary w-100 py-2 fs-6">
         Login
       </button>
@@ -69,29 +64,4 @@
 
   </div>
 </div>
-=======
-
-{% block content %}
-<h2>Login</h2>
-
-<form method="POST">
-    {% csrf_token %}
-
-    {% for field in form %}
-        <div>
-            <label>{{ field.label }}</label><br>
-            {{ field }}
-
-            {% for error in field.errors %}
-                <p style="color: red;">{{ error }}</p>
-            {% endfor %}
-        </div>
-        <br>
-    {% endfor %}
-
-    <button type="submit">Login</button>
-</form>
-
-<p>Don't have an account? <a href="{% url 'accounts:register' %}">Sign up</a></p>
->>>>>>> ab270ff6dcfc240ee159aea75da5e1efffae43a0
 {% endblock %}
