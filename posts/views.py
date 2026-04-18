@@ -7,6 +7,7 @@ from django.db.models import Count
 from .models import Post, Tag
 from .forms import PostForm
 from social.models import Follow, Like
+from accounts.models import User
 
 
 # Handles all post related views.
@@ -14,24 +15,6 @@ from social.models import Follow, Like
 # Create your views here.
 
 
-"""def get(self, request, *args, **kwargs): # will run whenevr the user tries to view this page
-        posts = Post.objects.all().order_by('-created_on') # displays posts from the most recent to the last (newest to oldest)
-
-        context = {
-            'post_list' : posts,
-        }
-        
-        return render(request, 'social/post_list.html', context)
-<<<<<<< HEAD
-
-# posts/views.py — update feed_view context
-
-from social.models import Follow, Like
-from accounts.models import User
-
-=======
-"""
->>>>>>> ab270ff6dcfc240ee159aea75da5e1efffae43a0
 def feed_view(request):
     if request.user.is_authenticated:
         following_ids = Follow.objects.filter(
@@ -116,8 +99,8 @@ def post_detail_view(request, post_id):
     # Fetch the post or return 404 if it does not exist.
     post = get_object_or_404(
         Post.objects.select_related('user').prefetch_related(
-            'comments__user',  # Fetch all comments and each comment's 
-            'likes'            # Fetch all likes 
+            'comments__user',  # Fetch all comments and each comment's
+            'likes'            # Fetch all likes
         ),
         id=post_id
     )
@@ -166,7 +149,11 @@ def edit_post_view(request, post_id):
         # Pre-fill the form with the current post content.
         form = PostForm(instance=post)
 
-    return render(request, 'posts/edit_post.html', {'form': form, 'post': post})
+    return render(request, 'posts/edit_post.html', {
+    'form': form,
+    'post': post,
+    'hide_bottom_nav': True
+})
 
 
 @login_required
