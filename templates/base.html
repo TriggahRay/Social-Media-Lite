@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -16,7 +15,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
   <!-- Our custom dark theme CSS -->
   <link rel="stylesheet" href="{% static 'css/style.css' %}">
-  
+
 
   {% block extra_css %}{% endblock %}
 </head>
@@ -190,7 +189,7 @@
               html += `<div class="search-section-title">People</div>`;
               data.users.forEach(u => {
                 html += `
-                  <a href="/profile/${u.username}/" class="search-result-item">
+                  <a href="/accounts/profile/${u.username}/" class="search-result-item">
                     <div class="avatar-placeholder size-sm">${u.username[0].toUpperCase()}</div>
                     <div>
                       <div style="font-weight:600;font-size:0.88rem;">@${u.username}</div>
@@ -203,7 +202,7 @@
               html += `<div class="search-section-title">Posts</div>`;
               data.posts.forEach(p => {
                 html += `
-                  <a href="/post/${p.id}/" class="search-result-item">
+                  <a href="/accounts/post/${p.id}/" class="search-result-item">
                     <i class="bi bi-file-text" style="color:var(--accent);font-size:1.1rem;"></i>
                     <div>
                       <div style="font-size:0.88rem;">${p.content}</div>
@@ -242,7 +241,7 @@ window.addEventListener('scroll', function () {
     // SCROLL DOWN → hide
     if (currentScroll > lastScrollTop) {
         nav.classList.add('hide');
-    } 
+    }
     // SCROLL UP → show
     else {
         nav.classList.remove('hide');
@@ -260,20 +259,4 @@ window.addEventListener('scroll', function () {
 
   {% block extra_js %}{% endblock %}
 </body>
-=======
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Thee Social</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  </head>
-  <body>
-    {% include 'navbar.html' %}
-    {% block content %}
-    {% endblock content %}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-  </body>
->>>>>>> ab270ff6dcfc240ee159aea75da5e1efffae43a0
-</html>
+
