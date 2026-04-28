@@ -1,0 +1,171 @@
+{% extends 'base.html' %}
+
+{% block title %}Post · Thee Social{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:620px;padding-top:16px;">
+
+  <div class="post-card">
+
+    <!-- Header -->
+    <div class="post-card-header">
+      <a href="{% url 'accounts:profile' username=post.user.username %}" class="post-card-user">
+        {% if post.user.profile_pic %}
+          <img src="{{ post.user.profile_pic.url }}" class="avatar" alt="avatar">
+        {% else %}
+          <div class="avatar-placeholder size-md">{{ post.user.username|first|upper }}</div>
+        {% endif %}
+        <div>
+          <div class="post-card-username">{{ post.user.username }}</div>
+          <div class="post-card-time">{{ post.created_at|date:"N j, Y" }}</div>
+        </div>
+      </a>
+      {% if post.user == user %}
+      <div class="d-flex gap-2">
+        <a href="{% url 'posts:edit_post' post_id=post.id %}"
+           class="btn btn-secondary btn-sm">
+          <i class="bi bi-pencil"></i>
+        </a>
+        <a href="{% url 'posts:delete_post' post_id=post.id %}"
+           class="btn btn-danger btn-sm">
+          <i class="bi bi-trash"></i>
+        </a>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Content -->
+    <div class="post-card-content">{{ post.content }}</div>
+
+    <!-- Image -->
+    {% if post.image %}
+      <img src="{{ post.image.url }}" class="post-card-image" alt="post image">
+    {% endif %}
+
+    <!-- Tags -->
+    {% if post.tags.all %}
+    <div style="padding:8px 16px;">
+      {% for tag in post.tags.all %}
+        <span style="color:var(--accent);">#{{ tag.name }} </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="post-card-stats">
+      <span>
+        <i class="bi bi-heart-fill" style="color:var(--danger);"></i>
+        <span id="likes-count">{{ likes_count }}</span> likes
+      </span>
+      <span>{{ comments|length }} comments</span>
+    </div>
+
+    <!-- Actions -->
+    <div class="post-card-actions">
+      <button class="btn-action {% if is_liked %}liked{% endif %}"
+              id="like-btn"
+              onclick="toggleLike({{ post.id }})">
+        <i class="bi {% if is_liked %}bi-heart-fill{% else %}bi-heart{% endif %}"></i> Like
+      </button>
+      <button class="btn-action" onclick="document.getElementById('comment-box').focus()">
+        <i class="bi bi-chat"></i> Comment
+      </button>
+    </div>
+
+    <!-- All comments -->
+    <div class="post-card-comments" id="comments-list">
+      {% for comment in comments %}
+      <div class="comment-item">
+        {% if comment.user.profile_pic %}
+          <img src="{{ comment.user.profile_pic.url }}" class="avatar-sm" alt="avatar">
+        {% else %}
+          <div class="avatar-placeholder size-sm">{{ comment.user.username|first|upper }}</div>
+        {% endif %}
+        <div class="comment-body">
+          <div class="comment-username">{{ comment.user.username }}</div>
+          <div class="comment-text">{{ comment.content }}</div>
+          <div class="comment-time">{{ comment.created_at|timesince }} ago</div>
+        </div>
+      </div>
+      {% empty %}
+        <p style="color:var(--text-muted);text-align:center;padding:16px;">
+          No comments yet. Be the first!
+        </p>
+      {% endfor %}
+    </div>
+
+    <!-- Add comment -->
+    {% if user.is_authenticated %}
+    <div class="comment-form">
+      {% if user.profile_pic %}
+        <img src="{{ user.profile_pic.url }}" class="avatar-sm" alt="me">
+      {% else %}
+        <div class="avatar-placeholder size-sm">{{ user.username|first|upper }}</div>
+      {% endif %}
+      <textarea class="comment-input" id="comment-box"
+                rows="1" placeholder="Write a comment..."></textarea>
+      <button class="btn btn-primary btn-sm" onclick="submitComment({{ post.id }})">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleLike(postId) {
+    fetch(`/like/${postId}/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF_TOKEN }
+    })
+    .then(r => r.json())
+    .then(data => {
+      const btn = document.getElementById('like-btn');
+      const icon = btn.querySelector('i');
+      if (data.liked) {
+        btn.classList.add('liked');
+        icon.className = 'bi bi-heart-fill';
+      } else {
+        btn.classList.remove('liked');
+        icon.className = 'bi bi-heart';
+      }
+      document.getElementById('likes-count').textContent = data.likes_count;
+    });
+  }
+
+  function submitComment(postId) {
+    const input = document.getElementById('comment-box');
+    const content = input.value.trim();
+    if (!content) return;
+
+    fetch(`/comment/${postId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': CSRF_TOKEN,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `content=${encodeURIComponent(content)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        const c = data.comment;
+        const list = document.getElementById('comments-list');
+        list.insertAdjacentHTML('beforeend', `
+          <div class="comment-item">
+            <div class="avatar-placeholder size-sm">${c.username[0].toUpperCase()}</div>
+            <div class="comment-body">
+              <div class="comment-username">${c.username}</div>
+              <div class="comment-text">${c.content}</div>
+              <div class="comment-time">Just now</div>
+            </div>
+          </div>`);
+        input.value = '';
+      }
+    });
+  }
+</script>
+{% endblock %}

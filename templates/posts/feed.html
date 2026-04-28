@@ -1,0 +1,561 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}Feed · Thee Social{% endblock %}
+
+{% with show_navbar=True active_tab='feed' %}
+{% block content %}
+
+{% if not request.user.is_authenticated %}
+  <div class="container py-5 text-center" style="max-width: 700px;">
+    <h1 class="mb-3">Welcome to Thee Social</h1>
+    <p class="text-muted mb-4">
+      Connect with people, share posts, and join the conversation.
+    </p>
+
+    <div class="d-flex justify-content-center gap-3">
+      <a href="{% url 'accounts:login' %}" class="btn btn-primary">Login</a>
+      <a href="{% url 'accounts:register' %}" class="btn btn-outline-primary">Sign Up</a>
+    </div>
+  </div>
+{% else %}
+
+<div class="feed-layout">
+
+
+  <div class="feed-main">
+
+    <!-- ── Create Post Card ── -->
+    <div class="card create-post-card">
+      <div class="create-post-top">
+
+        <!-- Current user avatar -->
+        {% if user.profile_pic %}
+          <img src="{{ user.profile_pic.url }}" class="avatar" alt="avatar">
+        {% else %}
+          <div class="avatar-placeholder size-md">
+            {{ user.username|first|upper }}
+          </div>
+        {% endif %}
+
+
+        <button class="create-post-trigger" id="createTrigger">
+          What's on your mind, {{ user.first_name|default:user.username }}?
+        </button>
+
+      </div>
+
+
+      <div class="create-post-form" id="createForm" style="display:none;">
+        <form method="post" enctype="multipart/form-data" action="{% url 'posts:create_post' %}">
+          {% csrf_token %}
+
+          <textarea name="content"
+                    placeholder="What's on your mind?"
+                    rows="3"
+                    maxlength="2000"
+                    id="postContent"
+                    class="create-textarea"></textarea>
+
+          <!-- Character counter -->
+          <div class="char-count">
+            <span id="charCount">0</span>/2000
+          </div>
+
+          <!-- Image preview shown after selecting a file -->
+          <div id="imagePreviewWrap" style="display:none;">
+            <div style="position:relative;display:inline-block;">
+              <img id="imagePreview" src="" alt="preview"
+                   style="max-width:100%;max-height:280px;
+                          border-radius:var(--radius-md);
+                          margin:8px 0;">
+              <button type="button" id="removeImage"
+                      style="position:absolute;top:4px;right:4px;
+                             background:rgba(0,0,0,0.6);color:#fff;
+                             border:none;border-radius:50%;
+                             width:26px;height:26px;cursor:pointer;
+                             font-size:0.8rem;">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <div class="create-post-actions">
+
+            <!-- Photo upload button -->
+            <label class="media-btn" for="postImage">
+              <i class="bi bi-image-fill"
+                 style="color:#45bd62;font-size:1.1rem;"></i>
+              Photo
+              <input type="file" id="postImage" name="image"
+                     accept="image/*" style="display:none;">
+            </label>
+
+            <!-- Tags input -->
+            <input type="text" name="tags_input"
+                   placeholder="#tags"
+                   class="tag-quick-input"
+                   style="background:var(--bg-tertiary);
+                          border:1px solid var(--border);
+                          border-radius:var(--radius-full);
+                          color:var(--text-primary);
+                          padding:4px 12px;
+                          font-size:0.85rem;
+                          width:120px;">
+
+            <!-- Visibility selector -->
+            <select name="visibility"
+                    style="background:var(--bg-tertiary);
+                           border:1px solid var(--border);
+                           border-radius:var(--radius-full);
+                           color:var(--text-secondary);
+                           padding:4px 10px;
+                           font-size:0.82rem;">
+              <option value="public">🌍 Public</option>
+              <option value="followers">👥 Followers</option>
+              <option value="private">🔒 Private</option>
+            </select>
+
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary btn-sm px-4">
+              Post
+            </button>
+
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ── No posts message ── -->
+    {% if not page_obj %}
+    <div class="card text-center py-5" style="color:var(--text-muted);">
+      <i class="bi bi-people" style="font-size:2.5rem;"></i>
+      <p class="mt-2">No posts yet. Follow people to see their posts here.</p>
+<a href="{% url 'messaging:search' %}"
+   class="btn btn-primary btn-sm"
+   style="width:160px; display:block; margin:10px auto;">
+  Find People
+  </a>
+    </div>
+    {% endif %}
+
+    <!-- ── Posts loop ── -->
+    {% for post in page_obj %}
+    <div class="post-card" id="post-{{ post.id }}">
+
+      <!-- Post header -->
+      <div class="post-card-header">
+        <a href="{% url 'accounts:profile' username=post.user.username %}"
+           class="post-card-user">
+          {% if post.user.profile_pic %}
+            <img src="{{ post.user.profile_pic.url }}" class="avatar" alt="avatar">
+          {% else %}
+            <div class="avatar-placeholder size-md">
+              {{ post.user.username|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <div class="post-card-username">
+              {{ post.user.get_full_name|default:post.user.username }}
+            </div>
+            <div class="post-card-time">
+              {{ post.created_at|timesince }} ago
+            </div>
+          </div>
+        </a>
+
+        <!-- 3-dot menu for post owner -->
+        {% if post.user == user %}
+        <div class="dropdown">
+          <button class="btn btn-link p-1"
+                  style="color:var(--text-secondary);"
+                  data-bs-toggle="dropdown">
+            <i class="bi bi-three-dots"></i>
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end"
+              style="background:var(--bg-secondary);
+                     border-color:var(--border);
+                     min-width:130px;">
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'posts:edit_post' post_id=post.id %}"
+                 style="color:var(--text-primary);">
+                <i class="bi bi-pencil me-2"></i>Edit
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item"
+                 href="{% url 'posts:delete_post' post_id=post.id %}"
+                 style="color:var(--danger);">
+                <i class="bi bi-trash me-2"></i>Delete
+              </a>
+            </li>
+          </ul>
+        </div>
+        {% endif %}
+      </div>
+
+      <!-- Post text -->
+      {% if post.content %}
+      <div class="post-card-content">{{ post.content }}</div>
+      {% endif %}
+
+      <!-- Post image -->
+      {% if post.image %}
+      <img src="{{ post.image.url }}"
+           class="post-card-image" alt="post image">
+      {% endif %}
+
+      <!-- Tags -->
+      {% if post.tags.all %}
+      <div style="padding:4px 16px 8px;">
+        {% for tag in post.tags.all %}
+          <span style="color:var(--accent);
+                       font-size:0.83rem;">#{{ tag.name }} </span>
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      <!-- Likes + comments count row -->
+      <div class="post-card-stats">
+        <span>
+          <span style="font-size:0.9rem;">❤️</span>
+          <span id="likes-count-{{ post.id }}">{{ post.likes_count }}</span> likes
+        </span>
+        <a href="{% url 'posts:post_detail' post_id=post.id %}"
+           style="color:var(--text-secondary);
+                  font-size:0.85rem;
+                  text-decoration:none;">
+          {{ post.comments_count }} comments
+        </a>
+      </div>
+
+      <!-- Like / Comment / Share actions -->
+      <div class="post-card-actions">
+        <button class="btn-action {% if post.id in liked_post_ids %}liked{% endif %}"
+                id="like-btn-{{ post.id }}"
+                onclick="toggleLike({{ post.id }})">
+          <i class="bi {% if post.id in liked_post_ids %}bi-heart-fill{% else %}bi-heart{% endif %}"></i>
+          Like
+        </button>
+
+        <button class="btn-action"
+                onclick="focusComment({{ post.id }})">
+          <i class="bi bi-chat"></i> Comment
+        </button>
+
+        <button class="btn-action">
+          <i class="bi bi-share"></i> Share
+        </button>
+      </div>
+
+      <!-- Comment input -->
+      <div class="comment-form">
+        {% if user.profile_pic %}
+          <img src="{{ user.profile_pic.url }}" class="avatar-sm" alt="me">
+        {% else %}
+          <div class="avatar-placeholder size-sm">
+            {{ user.username|first|upper }}
+          </div>
+        {% endif %}
+        <textarea class="comment-input"
+                  id="comment-input-{{ post.id }}"
+                  rows="1"
+                  placeholder="Write a comment..."></textarea>
+        <button class="btn btn-primary btn-sm"
+                onclick="submitComment({{ post.id }})">
+          <i class="bi bi-send-fill"></i>
+        </button>
+      </div>
+
+      <!-- Comments list -->
+      <div class="post-card-comments"
+           id="comments-{{ post.id }}">
+        {% for comment in post.comments.all|slice:":3" %}
+        <div class="comment-item">
+          {% if comment.user.profile_pic %}
+            <img src="{{ comment.user.profile_pic.url }}"
+                 class="avatar-sm" alt="avatar">
+          {% else %}
+            <div class="avatar-placeholder size-sm">
+              {{ comment.user.username|first|upper }}
+            </div>
+          {% endif %}
+          <div class="comment-body">
+            <div class="comment-username">
+              {{ comment.user.username }}
+            </div>
+            <div class="comment-text">{{ comment.content }}</div>
+            <div class="comment-time">
+              {{ comment.created_at|timesince }} ago
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+    {% endfor %}
+
+    <!-- ── Pagination ── -->
+    {% if page_obj.has_other_pages %}
+    <div class="d-flex justify-content-center gap-2 py-4">
+      {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}"
+           class="btn btn-secondary btn-sm">
+          <i class="bi bi-arrow-left"></i> Previous
+        </a>
+      {% endif %}
+      <span style="color:var(--text-secondary);line-height:2.2;">
+        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+      </span>
+      {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}"
+           class="btn btn-secondary btn-sm">
+          Next <i class="bi bi-arrow-right"></i>
+        </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  </div>
+
+
+  <aside class="feed-aside">
+
+  <!-- Current user mini profile card -->
+  <div class="card aside-card">
+    <div class="aside-profile">
+      {% if request.user.is_authenticated %}
+
+        {% if request.user.profile_pic %}
+          <img src="{{ request.user.profile_pic.url }}"
+               class="avatar" alt="avatar"
+               style="width:46px;height:46px;">
+        {% else %}
+          <div class="avatar-placeholder size-md">
+            {{ request.user.username|default:"U"|first|upper }}
+          </div>
+        {% endif %}
+
+        <div style="flex:1;min-width:0;">
+          {% if request.user.username %}
+            <a href="{% url 'accounts:profile' username=request.user.username %}"
+               class="aside-name">
+              {{ request.user.get_full_name|default:request.user.username }}
+            </a>
+            <div class="aside-handle">@{{ request.user.username }}</div>
+          {% else %}
+            <span class="aside-name">
+              {{ request.user.get_full_name|default:"User" }}
+            </span>
+            <div class="aside-handle text-muted">No username set</div>
+          {% endif %}
+        </div>
+
+        <form method="post" action="{% url 'accounts:logout' %}">
+          {% csrf_token %}
+          <button type="submit" class="aside-logout">Log out</button>
+        </form>
+
+      {% else %}
+        <div style="flex:1;min-width:0;">
+          <a href="{% url 'accounts:login' %}" class="aside-name">Log in</a>
+          <div class="aside-handle">Guest</div>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+
+
+    <!-- Suggested users -->
+    {% if suggested_users %}
+    <div class="card aside-card">
+      <h3 class="aside-title">Suggested for you</h3>
+      {% for u in suggested_users %}
+      <div class="suggested-user" id="suggested-{{ u.username }}">
+        <a href="{% url 'accounts:profile' username=u.username %}"
+           class="suggested-info">
+          {% if u.profile_pic %}
+            <img src="{{ u.profile_pic.url }}"
+                 class="avatar-sm" alt="avatar">
+          {% else %}
+            <div class="avatar-placeholder size-sm">
+              {{ u.username|first|upper }}
+            </div>
+          {% endif %}
+          <div>
+            <div class="suggested-name">
+              {{ u.get_full_name|default:u.username }}
+            </div>
+            <div class="suggested-handle">@{{ u.username }}</div>
+          </div>
+        </a>
+        <button class="btn-follow"
+                id="follow-btn-{{ u.username }}"
+                onclick="toggleFollow('{{ u.username }}', this)">
+          Follow
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+
+      <div style="margin-top:6px;color:var(--text-muted);font-size:0.75rem;">
+        © TheeSocial
+      </div>
+    </div>
+
+  </aside>
+
+</div>
+{% endif %}
+{% endblock %}
+{% endwith %}
+
+{% block extra_js %}
+<script>
+
+  // ── Expand create post form when trigger is clicked ──
+  document.getElementById('createTrigger').addEventListener('click', function() {
+    document.getElementById('createForm').style.display = 'block';
+    document.getElementById('postContent').focus();
+    this.style.display = 'none';
+  });
+
+  // ── Character counter for post textarea ──
+  document.getElementById('postContent').addEventListener('input', function() {
+    document.getElementById('charCount').textContent = this.value.length;
+  });
+
+  // ── Image preview before upload ──
+  document.getElementById('postImage').addEventListener('change', function() {
+    if (this.files && this.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('imagePreview').src = e.target.result;
+        document.getElementById('imagePreviewWrap').style.display = 'block';
+      };
+      reader.readAsDataURL(this.files[0]);
+    }
+  });
+
+  // ── Remove selected image ──
+  document.getElementById('removeImage').addEventListener('click', function() {
+    document.getElementById('postImage').value = '';
+    document.getElementById('imagePreviewWrap').style.display = 'none';
+    document.getElementById('imagePreview').src = '';
+  });
+
+  // ── Toggle like ──
+  function toggleLike(postId) {
+    fetch(`/like/${postId}/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': CSRF_TOKEN }
+    })
+    .then(r => r.json())
+    .then(data => {
+      const btn   = document.getElementById(`like-btn-${postId}`);
+      const icon  = btn.querySelector('i');
+      const count = document.getElementById(`likes-count-${postId}`);
+      if (data.liked) {
+        btn.classList.add('liked');
+        icon.className = 'bi bi-heart-fill';
+      } else {
+        btn.classList.remove('liked');
+        icon.className = 'bi bi-heart';
+      }
+      count.textContent = data.likes_count;
+    });
+  }
+
+  // ── Focus comment input ──
+  function focusComment(postId) {
+    document.getElementById(`comment-input-${postId}`).focus();
+  }
+
+  // ── Submit comment ──
+  function submitComment(postId) {
+    const input   = document.getElementById(`comment-input-${postId}`);
+    const content = input.value.trim();
+    if (!content) return;
+
+    fetch(`/comment/${postId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': CSRF_TOKEN,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: `content=${encodeURIComponent(content)}`
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.success) {
+        const c   = data.comment;
+        const div = document.getElementById(`comments-${postId}`);
+        div.insertAdjacentHTML('beforeend', `
+          <div class="comment-item">
+            <div class="avatar-placeholder size-sm">
+              ${c.username[0].toUpperCase()}
+            </div>
+            <div class="comment-body">
+              <div class="comment-username">${c.username}</div>
+              <div class="comment-text">${c.content}</div>
+              <div class="comment-time">Just now</div>
+            </div>
+          </div>`);
+        input.value = '';
+        input.style.height = 'auto';
+      }
+    });
+  }
+
+  // ── Auto-resize comment textarea ──
+  document.querySelectorAll('.comment-input').forEach(textarea => {
+    textarea.addEventListener('input', function() {
+      this.style.height = 'auto';
+      this.style.height = this.scrollHeight + 'px';
+    });
+    textarea.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        submitComment(this.id.replace('comment-input-', ''));
+      }
+    });
+  });
+
+  // ── Follow / Unfollow suggested users ──
+  function toggleFollow(username, btn) {
+    fetch(`/follow/${username}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': CSRF_TOKEN,
+        'X-Requested-With': 'XMLHttpRequest'
+      }
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.is_following) {
+        btn.textContent = 'Following';
+        btn.classList.add('following');
+        // Fade out the suggested user card after following
+        setTimeout(() => {
+          const card = document.getElementById(`suggested-${username}`);
+          if (card) {
+            card.style.opacity = '0';
+            card.style.transition = 'opacity 0.4s';
+            setTimeout(() => card.remove(), 400);
+          }
+        }, 600);
+      } else {
+        btn.textContent = 'Follow';
+        btn.classList.remove('following');
+      }
+    });
+  }
+</script>
+{% endblock %}
+

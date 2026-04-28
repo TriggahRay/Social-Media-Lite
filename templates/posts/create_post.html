@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Post · Thee Social{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:560px;padding-top:24px;">
+  <div class="card">
+    <div class="card-body">
+
+      <!-- Header -->
+      <div class="d-flex align-items-center gap-3 mb-4">
+        {% if user.profile_pic %}
+          <img src="{{ user.profile_pic.url }}" class="avatar" alt="me">
+        {% else %}
+          <div class="avatar-placeholder size-md">{{ user.username|first|upper }}</div>
+        {% endif %}
+        <div>
+          <div style="font-weight:700;">{{ user.username }}</div>
+          <div style="font-size:0.82rem;color:var(--text-secondary);">
+            Creating a new post
+          </div>
+        </div>
+      </div>
+
+      <form method="post" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Content -->
+        <div class="mb-3">
+          <textarea name="content" class="form-control" rows="4"
+                    placeholder="What's on your mind?">{{ form.content.value|default:'' }}</textarea>
+          {% if form.content.errors %}
+            <ul class="errorlist">{% for e in form.content.errors %}<li>{{ e }}</li>{% endfor %}</ul>
+          {% endif %}
+        </div>
+
+        <!-- Image upload -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-image"></i> Add Photo
+          </label>
+          <input type="file" name="image" class="form-control" accept="image/*"
+                 onchange="previewImage(this)">
+          <!-- Image preview box -->
+          <div id="image-preview" style="margin-top:10px;display:none;">
+            <img id="preview-img" src=""
+                 style="max-width:100%;border-radius:var(--radius-sm);max-height:300px;object-fit:cover;">
+          </div>
+        </div>
+
+        <!-- Tags -->
+        <div class="mb-3">
+          <label class="form-label">
+            <i class="bi bi-hash"></i> Tags
+          </label>
+          <input type="text" name="tags_input" class="form-control"
+                 placeholder="python, django, webdev"
+                 value="{{ form.tags_input.value|default:'' }}">
+          <small style="color:var(--text-muted);">Separate with commas, no # needed</small>
+        </div>
+
+        <!-- Visibility -->
+        <div class="mb-4">
+          <label class="form-label">
+            <i class="bi bi-eye"></i> Visibility
+          </label>
+          <select name="visibility" class="form-select">
+            <option value="public">Public — everyone can see</option>
+            <option value="followers">Followers only</option>
+            <option value="private">Private — only me</option>
+          </select>
+        </div>
+
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-primary flex-fill">
+            <i class="bi bi-send-fill"></i> Post
+          </button>
+          <a href="{% url 'posts:feed' %}" class="btn btn-secondary flex-fill">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Show image preview before uploading
+  function previewImage(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        document.getElementById('preview-img').src = e.target.result;
+        document.getElementById('image-preview').style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+{% endblock %}

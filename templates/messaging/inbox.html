@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Inbox · Thee Social{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:600px;padding-top:16px;">
+  <div class="card">
+
+    <div class="card-body" style="border-bottom:1px solid var(--border);">
+      <h5 style="font-weight:700;margin:0;">
+        <i class="bi bi-chat-fill"></i> Messages
+      </h5>
+    </div>
+
+    {% for other_user, latest_msg in conversations.items %}
+    <a href="{% url 'messaging:conversation' username=other_user.username %}"
+       class="inbox-item {% if not latest_msg.is_read and latest_msg.receiver == user %}unread{% endif %}">
+
+      <!-- Avatar -->
+      {% if other_user.profile_pic %}
+        <img src="{{ other_user.profile_pic.url }}" class="avatar" alt="avatar">
+      {% else %}
+        <div class="avatar-placeholder size-md">{{ other_user.username|first|upper }}</div>
+      {% endif %}
+
+      <!-- Name + preview -->
+      <div class="flex-fill" style="min-width:0;">
+        <div class="inbox-name">{{ other_user.username }}</div>
+        <div class="inbox-preview">
+          {% if latest_msg.sender == user %}You: {% endif %}
+          {{ latest_msg.content }}
+        </div>
+      </div>
+
+      <!-- Time -->
+      <div class="inbox-time">{{ latest_msg.created_at|timesince }}</div>
+
+    </a>
+    {% empty %}
+    <div class="text-center py-5" style="color:var(--text-muted);">
+      <i class="bi bi-chat" style="font-size:2rem;"></i>
+      <p class="mt-2">No messages yet.</p>
+      <a href="{% url 'messaging:search' %}" class="btn btn-primary btn-sm mt-2">Find People</a>
+    </div>
+    {% endfor %}
+
+  </div>
+</div>
+{% endblock %}
