@@ -21,14 +21,14 @@ def feed_view(request):
             follower=request.user
         ).values_list('following_id', flat=True)
 
-        # Get posts from followed users + own posts
+        # Get posts from followed users + own posts + all public posts
         following_posts = Post.objects.filter(
             user_id__in=following_ids
         )
         own_posts = Post.objects.filter(user=request.user)
-        
+        public_posts = Post.objects.filter(visibility='public')
         # Combine both querysets
-        posts = following_posts | own_posts
+        posts = (following_posts | own_posts | public_posts).distinct()
         
         # ── FALLBACK: If no posts (new user with no follows), show public posts ──
         if not posts.exists():
